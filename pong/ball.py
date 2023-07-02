@@ -2,6 +2,7 @@ import pygame
 import math
 import random
 
+ballColor = (150, 150, 150)
 
 class Ball:
     MAX_VEL = 5
@@ -25,7 +26,7 @@ class Ball:
         return angle
 
     def draw(self, win):
-        pygame.draw.circle(win, (255, 255, 255), (self.x, self.y), self.RADIUS)
+        pygame.draw.circle(win, ballColor, (self.x, self.y), self.RADIUS)
 
     def move(self):
         self.x += self.x_vel

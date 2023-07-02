@@ -12,7 +12,7 @@ class Paddle:
 
     def draw(self, win):
         pygame.draw.rect(
-            win, (255, 255, 255), (self.x, self.y, self.WIDTH, self.HEIGHT))
+            win, (255, 165 ,0), (self.x, self.y, self.WIDTH, self.HEIGHT), border_radius=10)
 
     def move(self, up=True):
         if up:

@@ -4,23 +4,27 @@ from pong import Game
 import os
 import neat
 
+import pickle
+
 class Pong:
     def __init__(self, window, width, height):
         self.game = Game(window, width, height)
+        pygame.display.set_caption('AI Pong')
 
         self.leftPaddle = self.game.left_paddle
         self.rightPaddle = self.game.right_paddle
         self.ball = self.game.ball
 
-    def testAi(self):
+    def testAi(self , genome , config):
 
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
         run = True
 
         clock = pygame.time.Clock()
 
         while run:
             
-            clock.tick(60)
+            clock.tick(120)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -29,14 +33,73 @@ class Pong:
             
             keys = pygame.key.get_pressed()
 
-            if keys[pygame.K_w]:
-                game.move_paddle(left=True, up=True)
+            if keys[pygame.K_UP]:
+                self.game.move_paddle(left=False, up=True)
 
-            if keys[pygame.K_s]:
-                game.move_paddle(left=True, up=False)
+            if keys[pygame.K_DOWN]:
+                self.game.move_paddle(left=False, up=False)
+            
+            if keys[pygame.K_c]:
+                self.game.reset()
 
-            gameInfo = game.loop()
-            game.draw()
+
+            Output = net.activate((self.leftPaddle.y, self.ball.y, abs(self.leftPaddle.x - self.ball.x)))
+            move = Output.index(max(Output))
+
+            if move == 0:
+                pass
+            elif move == 1:
+                self.game.move_paddle(left=True, up=True)
+            else:
+                self.game.move_paddle(left=True, up=False)
+
+            gameInfo = self.game.loop()
+            self.game.draw(True, False)
+
+            pygame.display.update()
+
+        pygame.quit()
+
+    def testAiVsAi(self , genome , config):
+
+        net1 = neat.nn.FeedForwardNetwork.create(genome, config)
+        net2 = neat.nn.FeedForwardNetwork.create(genome, config)
+
+        run = True
+
+        clock = pygame.time.Clock()
+
+        while run:
+
+            clock.tick(300)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    break
+
+            Output1 = net1.activate((self.leftPaddle.y, self.ball.y, abs(self.leftPaddle.x - self.ball.x)))
+            move1 = Output1.index(max(Output1))
+
+            Output2 = net2.activate((self.rightPaddle.y, self.ball.y, abs(self.rightPaddle.x - self.ball.x)))
+            move2 = Output2.index(max(Output2))
+
+            if move1 == 0:
+                pass
+            elif move1 == 1:
+                self.game.move_paddle(left=True, up=True)
+            else:
+                self.game.move_paddle(left=True, up=False)
+
+            if move2 == 0:
+                pass
+            elif move2 == 1:
+                self.game.move_paddle(left=False, up=True)
+            else:
+                self.game.move_paddle(left=False, up=False)
+
+            gameInfo = self.game.loop()
+            self.game.draw(False, True)
 
             pygame.display.update()
 
@@ -112,8 +175,8 @@ def evalGenomes(genomes, config):
             
 
 def runNeat(config):
-    #p = neat.Checkpointer.restore_checkpoint("neat-checkpoint-0")
-    population = neat.Population(config)
+    population = neat.Checkpointer.restore_checkpoint("neat-checkpoint-49")
+    #population = neat.Population(config)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
@@ -121,6 +184,22 @@ def runNeat(config):
 
     winner = population.run(evalGenomes, 50)
 
+    with open("winner.pkl", "wb") as f:
+        pickle.dump(winner, f)
+
+def testAi(config , mode):
+    with open("winner.pkl", "rb") as f:
+        genome = pickle.load(f)
+    
+    width , height = 800, 600
+    window = pygame.display.set_mode((width, height))
+
+    game = Pong(window, width, height)
+    if(mode):
+        game.testAiVsAi(genome, config)
+
+    else:
+        game.testAi(genome, config)
 
 if __name__ == "__main__":
     localDir = os.path.dirname(__file__)
@@ -128,5 +207,6 @@ if __name__ == "__main__":
 
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, configPath)
 
-    runNeat(config)
+    #runNeat(config)
+    testAi(config, False)
 

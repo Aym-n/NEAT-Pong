@@ -21,9 +21,10 @@ class Game:
     Use the information returned from .loop() to determine when to end the game by calling
     .reset().
     """
-    SCORE_FONT = pygame.font.SysFont("comicsans", 50)
+    SCORE_FONT = pygame.font.SysFont("Monocraft", 50)
     WHITE = (255, 255, 255)
-    BLACK = (0, 0, 0)
+    GREY = (50, 50, 50)
+    BLACK = (27, 26, 23)
     RED = (255, 0, 0)
 
     def __init__(self, window, window_width, window_height):
@@ -63,7 +64,7 @@ class Game:
             if i % 2 == 1:
                 continue
             pygame.draw.rect(
-                self.window, self.WHITE, (self.window_width//2 - 5, i, 10, self.window_height//20))
+                self.window, self.GREY, (self.window_width//2 - 5, i, 1, self.window_height//20))
 
     def _handle_collision(self):
         ball = self.ball
